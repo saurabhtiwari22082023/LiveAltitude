@@ -17,14 +17,17 @@
         function getGeolocationAltitude() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                    function (position) {
-                        let altitude = position.coords.altitude;
-                        if (altitude === null) {
-                            altitude = "Not available (Try Barometer)";
+                    (position) => {
+                        if (position.coords.altitude !== null) {
+                            let altitude = position.coords.altitude;
+                            console.log("GPS Altitude:", altitude, "meters");
+                            $("#altitude").text(altitude + " meters");
+                        } else {
+                            console.log("Altitude data not available.");
+                            $("#altitude").text("Altitude not available (Try Barometer)");
                         }
-                        $("#altitude").text(altitude + " meters");
                     },
-                    function (error) {
+                    (error) => {
                         console.error("Geolocation Error:", error);
                         $("#altitude").text("Error fetching altitude");
                     },
@@ -43,6 +46,7 @@
                 sensor.addEventListener('reading', () => {
                     let pressure = sensor.pressure; // Pressure in hPa
                     let altitude = 44330 * (1 - Math.pow(pressure / 1013.25, 1 / 5.255)); // Convert pressure to altitude
+                    console.log("Barometer Altitude:", altitude.toFixed(2), "meters");
                     $("#altitude").text(altitude.toFixed(2) + " meters");
                 });
                 sensor.start();
