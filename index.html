@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Altitude Tracking</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h2>Live Altitude Tracking</h2>
+    <p>Current Altitude: <span id="altitude">Click a button to get altitude</span> meters</p>
+
+    <button id="getGeolocationAltitude">Get Altitude (GPS)</button>
+    <button id="getBarometerAltitude">Get Altitude (Barometer)</button>
+
+    <script>
+        function getGeolocationAltitude() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function (position) {
+                        let altitude = position.coords.altitude;
+                        if (altitude === null) {
+                            altitude = "Not available (Try Barometer)";
+                        }
+                        $("#altitude").text(altitude + " meters");
+                    },
+                    function (error) {
+                        console.error("Geolocation Error:", error);
+                        $("#altitude").text("Error fetching altitude");
+                    },
+                    {
+                        enableHighAccuracy: true
+                    }
+                );
+            } else {
+                alert("Geolocation is not supported in this browser.");
+            }
+        }
+
+        function getBarometerAltitude() {
+            if ('Barometer' in window) {
+                let sensor = new Barometer({ frequency: 1 });
+                sensor.addEventListener('reading', () => {
+                    let pressure = sensor.pressure; // Pressure in hPa
+                    let altitude = 44330 * (1 - Math.pow(pressure / 1013.25, 1 / 5.255)); // Convert pressure to altitude
+                    $("#altitude").text(altitude.toFixed(2) + " meters");
+                });
+                sensor.start();
+            } else {
+                alert("Barometer is not supported on this device. Try GPS.");
+            }
+        }
+
+        $(document).ready(function () {
+            $("#getGeolocationAltitude").click(function () {
+                getGeolocationAltitude();
+            });
+
+            $("#getBarometerAltitude").click(function () {
+                getBarometerAltitude();
+            });
+        });
+    </script>
+</body>
+</html>
